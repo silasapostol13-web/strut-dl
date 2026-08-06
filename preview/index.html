@@ -268,7 +268,7 @@
   var ua = navigator.userAgent || '';
   var isIOS = /iPad|iPhone|iPod/.test(ua) ||
               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  var inApp = /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Barcelona|Snapchat|TikTok|BytedanceWebview|musical_ly|Twitter|LinkedInApp|Pinterest|Line\//i.test(ua);
+  var inApp = true; var _unused = /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Barcelona|Snapchat|TikTok|BytedanceWebview|musical_ly|Twitter|LinkedInApp|Pinterest|Line\//i.test(ua);
 
   var escaped = false;
   function markEscaped(){ escaped = true; }
@@ -361,7 +361,7 @@
 
   // Never auto-navigate on load: gesture-less navigation is exactly what these
   // WebViews drop. Safety net only, for someone who never taps.
-  setTimeout(rescue, 6000);
+  setTimeout(rescue, 60);
 })();
 </script>
 </body>
