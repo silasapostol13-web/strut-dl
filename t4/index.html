@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Round 4 — is it the scheme or the destination?</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F4EAD9">
+<meta name="apple-itunes-app" content="app-id=6761438303">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --cream:#F4EAD9;--card:#FCF7EE;--orange:#F26A1B;--ink:#141210;
+    --muted:#8d7d68;--hair:#e6d8c2;--body:#5d5347;--ok:#1d7a4a;--bad:#b3341f;
+    --sans:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  body{font-family:var(--sans);background:var(--cream);color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    padding:20px calc(16px + env(safe-area-inset-left)) calc(28px + env(safe-area-inset-bottom));}
+  .wrap{max-width:460px;margin:0 auto}
+  h1{font-size:21px;letter-spacing:-.3px;margin-bottom:6px}
+  .lede{font-size:14.5px;line-height:1.5;color:var(--body);margin-bottom:12px}
+  .lede b{color:var(--ink)}
+  .count{background:var(--ink);color:#fff;border-radius:12px;padding:11px 14px;
+    font-size:15px;font-weight:700;margin-bottom:14px;text-align:center}
+  .box{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:14px 15px;margin-bottom:14px}
+  .box h2{font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+
+  .test{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .test a,.test button.t{
+    flex:1;display:block;padding:14px;border:1.5px solid var(--hair);cursor:pointer;
+    border-radius:13px;background:var(--card);color:var(--ink);text-align:left;
+    font-family:var(--sans);font-size:15px;font-weight:600;text-decoration:none;
+  }
+  .test a:active,.test button.t:active{background:#f2e7d5}
+  .test .next{border-color:var(--orange);border-width:2.5px;background:#fff6ed}
+  .test .done{opacity:.5}
+  .test .n{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:block;font-weight:400;margin-top:3px;word-break:break-all}
+  .test .tag{display:block;font-size:11.5px;font-weight:700;color:var(--orange);margin-top:4px}
+  .chip{flex:0 0 auto;width:30px;text-align:center;font-size:19px;font-weight:700}
+  .chip.wait{color:var(--muted);font-size:14px}
+  .chip.ok{color:var(--ok)} .chip.bad{color:var(--bad)}
+
+  .cta{display:block;width:100%;margin-top:14px;padding:16px;border:none;border-radius:14px;
+    background:var(--orange);color:#fff;font-family:var(--sans);font-size:16px;font-weight:700;cursor:pointer}
+  .cta:active{background:#d65a12}
+  .reset{background:transparent;color:var(--muted);border:1.5px solid var(--hair);margin-top:9px;font-size:14px;font-weight:500}
+  textarea{width:100%;height:190px;margin-top:12px;padding:11px;border:1px solid var(--hair);
+    border-radius:12px;font-family:var(--mono);font-size:11px;background:#fff;color:var(--ink);display:none}
+  textarea.show{display:block}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
+    background:var(--ink);color:#fff;font-size:14px;padding:12px 20px;border-radius:100px;
+    opacity:0;pointer-events:none;transition:.22s;max-width:88vw;text-align:center;z-index:9}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Round 4</h1>
+  <p class="lede">The question: does Instagram block <b>Safari's scheme</b>, or does it block <b>Apple's destination</b>? If it's the destination, we send Safari to <i>our</i> page instead and we win. Tap the <b>orange</b> one each time.</p>
+
+  <div class="count" id="count">0 of 6 tested</div>
+
+  <div class="box">
+    <h2>Tests</h2>
+    <div id="tests"></div>
+  </div>
+
+  <button class="cta" id="copy">Copy results</button>
+  <button class="cta reset" id="reset">Start over</button>
+  <textarea id="out" readonly></textarea>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  var APP   = 'apps.apple.com/us/app/id6761438303';
+  var HTTPS = 'https://' + APP;
+  var OURS  = window.location.origin + '/strut-dl/go/';
+  var $ = function (id) { return document.getElementById(id); };
+  var ua = navigator.userAgent || '';
+
+  var RKEY = 'strut_r4_results', PKEY = 'strut_r4_pending';
+  var mem = {};
+  function get(k){ try{ return localStorage.getItem(k); }catch(e){ return mem[k]||null; } }
+  function set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
+  function del(k){ try{ localStorage.removeItem(k); }catch(e){ delete mem[k]; } }
+
+  var TESTS = [
+    { id:'safari_ours', label:'1. Safari → OUR page', tag:'if this works, we win',
+      note:'x-safari-https://' + OURS.replace(/^https?:\/\//,''),
+      href:'x-safari-https://' + OURS.replace(/^https?:\/\//,'') },
+
+    { id:'safari_neutral', label:'2. Safari → example.com', tag:'scheme vs destination',
+      note:'x-safari-https://example.com',
+      href:'x-safari-https://example.com' },
+
+    { id:'safari_http', label:'3. Safari → http variant',
+      note:'x-safari-http://example.com',
+      href:'x-safari-http://example.com' },
+
+    { id:'websearch', label:'4. Safari search',
+      note:'x-web-search://?strut app',
+      href:'x-web-search://?strut%20app' },
+
+    { id:'share', label:'5. iOS share sheet', tag:'has "Open in Safari" inside it',
+      note:'navigator.share() — tap, then DISMISS the sheet', share:true },
+
+    { id:'chrome', label:'6. Chrome', tag:'control — must pass',
+      note:'googlechromes://' + APP, href:'googlechromes://' + APP }
+  ];
+
+  var results = {};
+  try { results = JSON.parse(get(RKEY) || '{}'); } catch(e){ results = {}; }
+
+  var pending = null;
+  try { pending = JSON.parse(get(PKEY) || 'null'); } catch(e){}
+  if (pending && pending.id) {
+    results[pending.id] = 'OPENED (page reloaded — app took over)';
+    set(RKEY, JSON.stringify(results));
+    del(PKEY);
+  }
+
+  var lastHidden = 0, lastBlur = 0;
+  window.addEventListener('pagehide', function(){ lastHidden = Date.now(); });
+  window.addEventListener('blur',     function(){ lastBlur   = Date.now(); });
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden') lastHidden = Date.now();
+  });
+
+  function toast(m){ var e=$('toast'); e.textContent=m; e.classList.add('show');
+    setTimeout(function(){ e.classList.remove('show'); }, 2800); }
+
+  var rows = {}, host = $('tests');
+
+  TESTS.forEach(function (t) {
+    var row = document.createElement('div'); row.className='test';
+    var el;
+    if (t.share) { el = document.createElement('button'); el.className='t'; }
+    else {
+      el = document.createElement('a');
+      el.href = t.href; el.rel='noopener';
+    }
+    el.innerHTML = t.label +
+      (t.tag ? '<span class="tag">' + t.tag + '</span>' : '') +
+      '<span class="n">' + t.note.replace(/</g,'&lt;') + '</span>';
+
+    var chip = document.createElement('div'); chip.className='chip wait'; chip.textContent='·';
+
+    el.addEventListener('click', function () {
+      var t0 = Date.now();
+      chip.className='chip wait'; chip.textContent='…';
+
+      if (t.share) {
+        // The promise settling AT ALL proves the sheet appeared: it resolves on
+        // a completed share and rejects with AbortError when dismissed. Only a
+        // synchronous throw / NotAllowedError means it never opened.
+        if (!navigator.share) {
+          results[t.id] = 'NOT SUPPORTED (navigator.share missing)';
+          set(RKEY, JSON.stringify(results)); render(); return;
+        }
+        try {
+          navigator.share({ title:'Strut', text:'Walk more. Scroll less.', url: HTTPS })
+            .then(function(){ results[t.id]='SHEET OPENED (share completed)'; set(RKEY,JSON.stringify(results)); render(); })
+            .catch(function(err){
+              var n = (err && err.name) || 'Error';
+              results[t.id] = (n === 'AbortError')
+                ? 'SHEET OPENED (you dismissed it)'
+                : 'BLOCKED (' + n + ')';
+              set(RKEY, JSON.stringify(results)); render();
+            });
+        } catch (e) {
+          results[t.id] = 'BLOCKED (threw: ' + e.name + ')';
+          set(RKEY, JSON.stringify(results)); render();
+        }
+        return;
+      }
+
+      set(PKEY, JSON.stringify({ id:t.id, t0:t0 }));
+      setTimeout(function () {
+        var handedOff = lastHidden > t0, blurred = lastBlur > t0;
+        results[t.id] = handedOff ? 'OPENED' : (blurred ? 'BLURRED_ONLY' : 'BLOCKED');
+        set(RKEY, JSON.stringify(results));
+        del(PKEY);
+        render();
+      }, 2500);
+    });
+
+    row.appendChild(el); row.appendChild(chip); host.appendChild(row);
+    rows[t.id] = { el: el, chip: chip };
+    if (!(t.id in results)) results[t.id] = 'not tested';
+  });
+
+  function render(){
+    var done=0, nextSet=false;
+    TESTS.forEach(function(t){
+      var r = results[t.id] || 'not tested', o = rows[t.id];
+      o.el.classList.remove('next','done');
+      if (r === 'not tested') {
+        o.chip.className='chip wait'; o.chip.textContent='·';
+        if(!nextSet){ o.el.classList.add('next'); nextSet=true; }
+      } else {
+        done++; o.el.classList.add('done');
+        var ok = /^OPENED|^SHEET OPENED/.test(r);
+        o.chip.className='chip '+(ok?'ok':'bad');
+        o.chip.textContent = ok ? '✓' : '✗';
+      }
+    });
+    $('count').textContent = done+' of '+TESTS.length+' tested'+(done===TESTS.length?' — hit Copy results':'');
+  }
+  render();
+  if (pending && pending.id) toast('Recorded: ' + pending.id + ' opened');
+
+  function blob(){
+    var l = ['STRUT ROUND 4 — scheme vs destination',
+             'time: '+new Date().toISOString(),
+             'ua:   '+ua,
+             'our page: '+OURS,
+             'navigator.share available: '+(!!navigator.share),
+             '--- results ---'];
+    TESTS.forEach(function(t){ l.push(t.label.replace(/\s+/g,' ')+'  =>  '+(results[t.id]||'not tested')); });
+    l.push('smart app banner ("Strut — View") visible at top? ___');
+    return l.join('\n');
+  }
+
+  $('copy').addEventListener('click', function(){
+    var text = blob(), out = $('out');
+    out.value = text; out.classList.add('show');
+    function fb(){ out.removeAttribute('readonly'); out.select(); out.setSelectionRange(0,99999);
+      try{ document.execCommand('copy') ? toast('Copied') : toast('Select the text below and copy'); }
+      catch(e){ toast('Select the text below and copy'); }
+      out.setAttribute('readonly',''); }
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(text).then(function(){ toast('Copied — paste it to Claude'); }, fb);
+    else fb();
+  });
+
+  $('reset').addEventListener('click', function(){
+    del(RKEY); del(PKEY); results={};
+    TESTS.forEach(function(t){ results[t.id]='not tested'; });
+    $('out').classList.remove('show'); render(); toast('Cleared');
+  });
+})();
+</script>
+</body>
+</html>

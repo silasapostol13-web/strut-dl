@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Opening the App Store…</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F4EAD9">
+<meta name="apple-itunes-app" content="app-id=6761438303">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
+    background:#F4EAD9;color:#141210;height:100vh;display:flex;align-items:center;
+    justify-content:center;text-align:center;padding:24px;-webkit-font-smoothing:antialiased}
+  .mark{font-family:Georgia,serif;font-size:14px;letter-spacing:3.5px;text-transform:uppercase;color:#F26A1B}
+  h1{font-family:Georgia,serif;font-size:29px;font-weight:400;margin:12px 0 0;line-height:1.15}
+  p{font-size:15px;color:#5d5347;margin:10px 0 0}
+  .spin{width:22px;height:22px;margin:22px auto 0;border-radius:50%;
+    border:2.5px solid #e6d8c2;border-top-color:#F26A1B;animation:s .7s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  a.btn{display:inline-block;margin-top:22px;padding:15px 26px;border-radius:15px;
+    background:#F26A1B;color:#fff;font-weight:700;font-size:16px;text-decoration:none}
+</style>
+</head>
+<body>
+<div>
+  <div class="mark">Strut</div>
+  <h1>Opening the App&nbsp;Store</h1>
+  <div class="spin"></div>
+  <p>One moment.</p>
+  <a class="btn" id="manual" href="https://apps.apple.com/us/app/id6761438303">Tap here if nothing happens</a>
+</div>
+<script>
+  // This page only ever runs in a REAL browser — it is the landing spot after a
+  // successful escape out of an in-app browser. Safari/Chrome follow Apple's
+  // 301 to the App Store scheme without complaint, so a plain replace() is all
+  // that is needed here. Never link this page from inside an IAB.
+  location.replace('https://apps.apple.com/us/app/id6761438303');
+</script>
+</body>
+</html>
