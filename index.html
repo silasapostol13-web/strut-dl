@@ -94,21 +94,31 @@
       A REAL anchor, not a JS-driven button. In-app WebViews treat a genuine
       user-gesture anchor navigation far more permissively than a programmatic
       window.open()/location.href — that difference is the whole ballgame.
-      itms-apps:// is a native scheme, so iOS opens the App Store APP; it never
+      itms-appss:// is a native scheme, so iOS opens the App Store APP; it never
       becomes an https page-load Instagram can swallow.
+
+      DOUBLE-S IS DELIBERATE. Verified 2026-08-05 by curl: apps.apple.com 301s
+      every iOS UA to `itms-appss://apps.apple.com/us/app/id…`. That is the
+      scheme current iOS actually registers, so we emit exactly what Apple does
+      rather than the older single-s `itms-apps://` (kept below as a fallback).
 
       NOT USED: x-safari-https:// — confirmed dead in Instagram's WebView since
       2026-03-03 (shalanah/inapp-debugger#16). Any "escape to Safari first"
       advice predates that and fails silently on the one platform that matters.
     -->
-    <a class="btn" id="primary" href="itms-apps://apps.apple.com/app/id6761438303" rel="noopener">Get Strut on the App Store</a>
+    <a class="btn" id="primary" href="itms-appss://apps.apple.com/us/app/id6761438303" rel="noopener">Get Strut on the App Store</a>
 
     <div class="more" id="more">
       <h2>Didn't open?</h2>
 
+      <!-- Legacy single-s scheme. Some older iOS builds register this one and
+           not the double-s form, so it is a genuinely different attempt. -->
+      <a class="btn ghost" id="alt-legacy" href="itms-apps://apps.apple.com/us/app/id6761438303" rel="noopener">Try again</a>
+
       <!-- Plain https, still as a real cross-domain anchor click. Succeeds most
-           of the time even inside the IAB. -->
-      <a class="btn ghost" id="alt-web" href="https://apps.apple.com/app/strut-walk-more-scroll-less/id6761438303" target="_blank" rel="noopener">Try again</a>
+           of the time even inside the IAB. Link by ID, never the slug — the app
+           was renamed once already. -->
+      <a class="btn ghost" id="alt-web" href="https://apps.apple.com/us/app/id6761438303" target="_blank" rel="noopener">Open App Store page</a>
 
       <!-- Only real working browser escape left on iOS, and only if Chrome exists. -->
       <a class="btn ghost" id="alt-chrome" href="googlechromes://apps.apple.com/app/id6761438303" hidden>Open in Chrome</a>
@@ -129,7 +139,7 @@
     <button class="btn ghost" id="copy2">Copy link</button>
   </div>
 
-  <p class="foot"><a href="https://apps.apple.com/app/id6761438303" id="home">strut</a></p>
+  <p class="foot"><a href="https://apps.apple.com/us/app/id6761438303" id="home">strut</a></p>
 </main>
 
 <div class="toast" id="toast">Link copied</div>
@@ -137,7 +147,10 @@
 <script>
 (function () {
   var APP_ID  = '6761438303';
-  var WEB_URL = 'https://apps.apple.com/app/strut-walk-more-scroll-less/id' + APP_ID;
+  // By ID, never the slug — the app has already been renamed once
+  // ("Strut: Move to Unlock" -> "Strut: Walk More, Scroll Less") and the slug
+  // moved with it. IDs are permanent.
+  var WEB_URL = 'https://apps.apple.com/us/app/id' + APP_ID;
 
   // Derived, not hardcoded — correct on whatever domain this is deployed to.
   var SHARE = window.location.origin +
