@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Round 2 — stock apps only</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F4EAD9">
+<!-- Smart App Banner. Safari renders this; WKWebView normally does not. If it
+     shows up inside Instagram, that is a free universal escape. -->
+<meta name="apple-itunes-app" content="app-id=6761438303">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --cream:#F4EAD9;--card:#FCF7EE;--orange:#F26A1B;--ink:#141210;
+    --muted:#8d7d68;--hair:#e6d8c2;--body:#5d5347;--ok:#1d7a4a;--bad:#b3341f;
+    --sans:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  body{font-family:var(--sans);background:var(--cream);color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    padding:20px calc(16px + env(safe-area-inset-left)) calc(28px + env(safe-area-inset-bottom));}
+  .wrap{max-width:460px;margin:0 auto}
+  h1{font-size:21px;letter-spacing:-.3px;margin-bottom:6px}
+  .lede{font-size:14.5px;line-height:1.5;color:var(--body);margin-bottom:14px}
+  .lede b{color:var(--ink)}
+  .note{background:#fff3e6;border:1px solid #f3d5b5;border-radius:12px;padding:11px 13px;
+    font-size:13.5px;line-height:1.5;color:#6b4520;margin-bottom:14px}
+  .box{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:14px 15px;margin-bottom:14px}
+  .box h2{font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+
+  .test{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .test a{
+    flex:1;display:block;padding:14px;border:1.5px solid var(--hair);
+    border-radius:13px;background:var(--card);color:var(--ink);text-align:left;
+    font-family:var(--sans);font-size:15px;font-weight:600;text-decoration:none;
+  }
+  .test a:active{background:#f2e7d5}
+  .test a.hero{border-color:var(--orange);border-width:2px}
+  .test .n{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:block;font-weight:400;margin-top:3px;word-break:break-all}
+  .chip{flex:0 0 auto;width:30px;text-align:center;font-size:19px;font-weight:700}
+  .chip.wait{color:var(--muted);font-size:14px}
+  .chip.ok{color:var(--ok)} .chip.bad{color:var(--bad)}
+
+  .cta{display:block;width:100%;margin-top:14px;padding:16px;border:none;border-radius:14px;
+    background:var(--orange);color:#fff;font-family:var(--sans);font-size:16px;font-weight:700;cursor:pointer}
+  .cta:active{background:#d65a12}
+  textarea{width:100%;height:180px;margin-top:12px;padding:11px;border:1px solid var(--hair);
+    border-radius:12px;font-family:var(--mono);font-size:11px;background:#fff;color:var(--ink);display:none}
+  textarea.show{display:block}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
+    background:var(--ink);color:#fff;font-size:14px;padding:12px 20px;border-radius:100px;
+    opacity:0;pointer-events:none;transition:.22s}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Round 2 — stock apps only</h1>
+  <p class="lede">Safari's scheme came back <b>blocked</b>. These are all apps that ship on every iPhone, so a ✗ here means <b>Instagram blocked it</b> — not that you're missing an app. That's the whole point of this round.</p>
+
+  <div class="note">
+    Tap <b>every</b> button, top to bottom — including the boring ones. A ✗ is just as useful to me as a ✓. Come back to Instagram after each, then hit <b>Copy results</b>.
+  </div>
+
+  <div class="box">
+    <h2>Tests</h2>
+    <div id="tests"></div>
+  </div>
+
+  <button class="cta" id="copy">Copy results</button>
+  <textarea id="out" readonly></textarea>
+</div>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+(function () {
+  var APP   = 'apps.apple.com/us/app/id6761438303';
+  var HTTPS = 'https://' + APP;
+  var $ = function (id) { return document.getElementById(id); };
+
+  var ua = navigator.userAgent || '';
+
+  var TESTS = [
+    { id:'safaritab', hero:true,
+      label:'1. Safari — alternate scheme',
+      note:'com-apple-mobilesafari-tab://' + HTTPS,
+      href:'com-apple-mobilesafari-tab://' + HTTPS },
+
+    { id:'itmsapps', hero:true,
+      label:'2. App Store — single-s scheme',
+      note:'itms-apps://' + APP,
+      href:'itms-apps://' + APP },
+
+    { id:'itms',
+      label:'3. App Store — bare itms://',
+      note:'itms://' + APP,
+      href:'itms://' + APP },
+
+    { id:'sms', hero:true,
+      label:'4. Messages  ← universal backup if it fires',
+      note:'sms:&body=<link>',
+      href:'sms:&body=' + encodeURIComponent('Get Strut: ' + HTTPS) },
+
+    { id:'mailto',
+      label:'5. Mail',
+      note:'mailto:?body=<link>',
+      href:'mailto:?subject=' + encodeURIComponent('Get Strut') +
+           '&body=' + encodeURIComponent(HTTPS) },
+
+    { id:'tel',
+      label:'6. Phone  (pure scheme probe)',
+      note:'tel:5551234567 — cancel the call prompt',
+      href:'tel:5551234567' },
+
+    { id:'chrome',
+      label:'7. Chrome  (control — this one worked before)',
+      note:'googlechromes://' + APP,
+      href:'googlechromes://' + APP },
+
+    { id:'plain',
+      label:'8. Plain https  (control — expect ✗)',
+      note:HTTPS,
+      href:HTTPS, blank:true }
+  ];
+
+  var results = {}, lastHidden = 0, lastBlur = 0;
+
+  window.addEventListener('pagehide', function () { lastHidden = Date.now(); });
+  window.addEventListener('blur',     function () { lastBlur   = Date.now(); });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') lastHidden = Date.now();
+  });
+
+  var host = $('tests');
+  TESTS.forEach(function (t) {
+    var row = document.createElement('div');
+    row.className = 'test';
+
+    var a = document.createElement('a');
+    a.href = t.href;
+    a.rel = 'noopener';
+    if (t.blank) a.target = '_blank';
+    if (t.hero) a.className = 'hero';
+    a.innerHTML = t.label + '<span class="n">' + t.note.replace(/</g,'&lt;') + '</span>';
+
+    var chip = document.createElement('div');
+    chip.className = 'chip wait';
+    chip.textContent = '·';
+
+    a.addEventListener('click', function () {
+      var t0 = Date.now();
+      chip.className = 'chip wait';
+      chip.textContent = '…';
+      setTimeout(function () {
+        var handedOff = lastHidden > t0;
+        var blurred   = lastBlur   > t0;
+        // BLURRED_ONLY usually means a native alert appeared without a real
+        // app handoff — worth distinguishing from a silent refusal.
+        results[t.id] = handedOff ? 'OPENED' : (blurred ? 'BLURRED_ONLY' : 'BLOCKED');
+        chip.className = 'chip ' + (handedOff ? 'ok' : 'bad');
+        chip.textContent = handedOff ? '✓' : '✗';
+      }, 2500);
+    });
+
+    row.appendChild(a);
+    row.appendChild(chip);
+    host.appendChild(row);
+    results[t.id] = 'not tested';
+  });
+
+  function blob() {
+    var lines = [
+      'STRUT ROUND 2 — STOCK APPS ONLY',
+      'time: ' + new Date().toISOString(),
+      'ua:   ' + ua,
+      '--- results ---'
+    ];
+    TESTS.forEach(function (t) { lines.push(t.label.replace(/\s+/g,' ') + '  =>  ' + results[t.id]); });
+    lines.push('(OPENED = something took over. BLOCKED = nothing happened.');
+    lines.push(' BLURRED_ONLY = an alert appeared but no app opened.)');
+    lines.push('smart app banner visible at top of page? ___');
+    return lines.join('\n');
+  }
+
+  $('copy').addEventListener('click', function () {
+    var text = blob(), out = $('out');
+    out.value = text; out.classList.add('show');
+    function toast(m) {
+      var el = $('toast'); el.textContent = m; el.classList.add('show');
+      setTimeout(function () { el.classList.remove('show'); }, 2400);
+    }
+    function fallback() {
+      out.removeAttribute('readonly'); out.select(); out.setSelectionRange(0, 99999);
+      try { document.execCommand('copy') ? toast('Copied') : toast('Select the text below and copy'); }
+      catch (e) { toast('Select the text below and copy'); }
+      out.setAttribute('readonly', '');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast('Copied — paste it to Claude'); }, fallback);
+    } else { fallback(); }
+  });
+})();
+</script>
+</body>
+</html>
