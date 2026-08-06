@@ -6,6 +6,12 @@
 <title>Round 6 — did Safari actually arrive?</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#F4EAD9">
+<!-- Smart App Banner. WKWebView normally does not render these at all — but
+     x-web-search:// "normally" doesn't survive Instagram either, and it did.
+     If this bar appears, tapping it reaches the App Store through a NATIVE
+     WebKit affordance rather than a page navigation, which is a completely
+     different code path from every scheme Meta blocked. -->
+<meta name="apple-itunes-app" content="app-id=6761438303">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   :root{
@@ -73,6 +79,20 @@
   <h1>Round 6</h1>
   <p class="lede">Round 5's "blank" may have been a <b>false negative</b> — <code>/go</code> redirected instantly, so it rendered nothing whether or not Safari arrived.</p>
   <div class="hero">This time the landing page is a <b>full green screen that says IT WORKED</b>. Impossible to miss. If you see green, Safari navigated and <b>we've won</b>.</div>
+
+  <div class="box" id="bannerbox" style="border-color:var(--orange);border-width:2px">
+    <h2>Step 0 — look at the very top of this screen</h2>
+    <p style="font-size:14.5px;line-height:1.5;color:var(--body);margin-bottom:12px">
+      Is there a thin native bar above this page — an app icon with <b>Strut</b> and a blue
+      <b>VIEW</b> or <b>OPEN</b> button? It sits <b>above the page content</b>, not inside it.
+      Scroll to the very top if you need to.
+    </p>
+    <div style="display:flex;gap:9px">
+      <button class="bnr" data-v="BANNER VISIBLE" style="flex:1;padding:14px;border-radius:13px;border:2px solid var(--ok);background:#fff;color:var(--ok);font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer">Yes, I see it</button>
+      <button class="bnr" data-v="NO BANNER" style="flex:1;padding:14px;border-radius:13px;border:1.5px solid var(--hair);background:#fff;color:var(--ink);font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer">No bar</button>
+    </div>
+    <div id="bannerres" style="margin-top:10px;font-size:13px;font-weight:700"></div>
+  </div>
 
   <div class="count" id="count">0 of 3 answered</div>
 
@@ -185,9 +205,27 @@
   }
   render();
 
+  // ---- step 0: smart app banner ----
+  function renderBanner(){
+    var r = results.banner, el = $('bannerres');
+    if(!r){ el.textContent=''; return; }
+    var yes = (r === 'BANNER VISIBLE');
+    el.textContent = yes ? '✓ recorded — the native banner IS rendering' : '✗ recorded — no native banner';
+    el.style.color = yes ? 'var(--ok)' : 'var(--muted)';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.bnr'), function(b){
+    b.addEventListener('click', function(){
+      results.banner = b.getAttribute('data-v');
+      set(RKEY, JSON.stringify(results));
+      renderBanner();
+    });
+  });
+  renderBanner();
+
   function blob(){
-    var l=['STRUT ROUND 6 — loud landing page, no redirect',
-           'time: '+new Date().toISOString(),'ua:   '+ua,'--- results ---'];
+    var l=['STRUT ROUND 6 — loud landing page + smart app banner',
+           'time: '+new Date().toISOString(),'ua:   '+ua,'--- results ---',
+           'STEP 0 smart app banner  =>  '+(results.banner||'not answered')];
     TESTS.forEach(function(t){ l.push(t.label.replace(/\s+/g,' ')+'  =>  '+(results[t.id]||'not answered')); });
     return l.join('\n');
   }
@@ -206,7 +244,7 @@
   $('reset').addEventListener('click', function(){
     del(RKEY); del(PKEY); results={};
     TESTS.forEach(function(t){ results[t.id]='not answered'; });
-    $('out').classList.remove('show'); render(); toast('Cleared');
+    $('out').classList.remove('show'); render(); renderBanner(); toast('Cleared');
   });
 })();
 </script>
