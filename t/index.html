@@ -3,9 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Which browser escape works?</title>
+<title>Round 2 — stock apps only</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#F4EAD9">
+<!-- Smart App Banner. Safari renders this; WKWebView normally does not. If it
+     shows up inside Instagram, that is a free universal escape. -->
+<meta name="apple-itunes-app" content="app-id=6761438303">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   :root{
@@ -19,14 +22,12 @@
     padding:20px calc(16px + env(safe-area-inset-left)) calc(28px + env(safe-area-inset-bottom));}
   .wrap{max-width:460px;margin:0 auto}
   h1{font-size:21px;letter-spacing:-.3px;margin-bottom:6px}
-  .lede{font-size:14.5px;line-height:1.5;color:var(--body);margin-bottom:8px}
+  .lede{font-size:14.5px;line-height:1.5;color:var(--body);margin-bottom:14px}
   .lede b{color:var(--ink)}
-  .steps{font-size:14.5px;line-height:1.6;color:var(--body);margin:0 0 16px 17px}
-  .steps b{color:var(--ink)}
+  .note{background:#fff3e6;border:1px solid #f3d5b5;border-radius:12px;padding:11px 13px;
+    font-size:13.5px;line-height:1.5;color:#6b4520;margin-bottom:14px}
   .box{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:14px 15px;margin-bottom:14px}
   .box h2{font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
-  .kv{font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--body);word-break:break-all}
-  .kv b{color:var(--ink)}
 
   .test{display:flex;align-items:center;gap:10px;margin-bottom:9px}
   .test a{
@@ -44,7 +45,7 @@
   .cta{display:block;width:100%;margin-top:14px;padding:16px;border:none;border-radius:14px;
     background:var(--orange);color:#fff;font-family:var(--sans);font-size:16px;font-weight:700;cursor:pointer}
   .cta:active{background:#d65a12}
-  textarea{width:100%;height:170px;margin-top:12px;padding:11px;border:1px solid var(--hair);
+  textarea{width:100%;height:180px;margin-top:12px;padding:11px;border:1px solid var(--hair);
     border-radius:12px;font-family:var(--mono);font-size:11px;background:#fff;color:var(--ink);display:none}
   textarea.show{display:block}
   .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
@@ -55,22 +56,15 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Which browser escape works?</h1>
-  <p class="lede">We know Instagram blocks the App&nbsp;Store scheme but allowed <b>Chrome's</b>. So the escape has to go through a browser. The question is <b>which browsers Instagram will let us open</b> — Safari is the one that matters, because every iPhone has it.</p>
-  <ol class="steps">
-    <li>Tap each button, <b>top to bottom</b></li>
-    <li>If a browser or the App&nbsp;Store opens, <b>come straight back</b> to Instagram</li>
-    <li>The mark on the right fills in — <b>✓ opened</b>, <b>✗ blocked</b></li>
-    <li>Then hit <b>Copy results</b> and paste it to Claude</li>
-  </ol>
+  <h1>Round 2 — stock apps only</h1>
+  <p class="lede">Safari's scheme came back <b>blocked</b>. These are all apps that ship on every iPhone, so a ✗ here means <b>Instagram blocked it</b> — not that you're missing an app. That's the whole point of this round.</p>
 
-  <div class="box">
-    <h2>This browser</h2>
-    <div class="kv" id="env"></div>
+  <div class="note">
+    Tap <b>every</b> button, top to bottom — including the boring ones. A ✗ is just as useful to me as a ✓. Come back to Instagram after each, then hit <b>Copy results</b>.
   </div>
 
   <div class="box">
-    <h2>Browser escapes</h2>
+    <h2>Tests</h2>
     <div id="tests"></div>
   </div>
 
@@ -81,50 +75,51 @@
 
 <script>
 (function () {
-  var APP  = 'apps.apple.com/us/app/id6761438303';
+  var APP   = 'apps.apple.com/us/app/id6761438303';
   var HTTPS = 'https://' + APP;
-  var ENC  = encodeURIComponent(HTTPS);
   var $ = function (id) { return document.getElementById(id); };
 
   var ua = navigator.userAgent || '';
-  var inAppRe = /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Barcelona|Snapchat|TikTok|BytedanceWebview|musical_ly/i;
-  var which = (ua.match(inAppRe) || ['none'])[0];
-  $('env').innerHTML = '<b>UA:</b> ' + ua.replace(/</g,'&lt;') + '<br><b>matched:</b> ' + which;
 
-  // Ordered by how much coverage a win would give us.
   var TESTS = [
-    { id:'safari', hero:true,
-      label:'1. Safari  ← the one that matters',
-      note:'x-safari-https://' + APP,
-      href:'x-safari-https://' + APP },
-
-    { id:'safarialt', hero:true,
-      label:'2. Safari (alternate form)',
+    { id:'safaritab', hero:true,
+      label:'1. Safari — alternate scheme',
       note:'com-apple-mobilesafari-tab://' + HTTPS,
       href:'com-apple-mobilesafari-tab://' + HTTPS },
 
+    { id:'itmsapps', hero:true,
+      label:'2. App Store — single-s scheme',
+      note:'itms-apps://' + APP,
+      href:'itms-apps://' + APP },
+
+    { id:'itms',
+      label:'3. App Store — bare itms://',
+      note:'itms://' + APP,
+      href:'itms://' + APP },
+
+    { id:'sms', hero:true,
+      label:'4. Messages  ← universal backup if it fires',
+      note:'sms:&body=<link>',
+      href:'sms:&body=' + encodeURIComponent('Get Strut: ' + HTTPS) },
+
+    { id:'mailto',
+      label:'5. Mail',
+      note:'mailto:?body=<link>',
+      href:'mailto:?subject=' + encodeURIComponent('Get Strut') +
+           '&body=' + encodeURIComponent(HTTPS) },
+
+    { id:'tel',
+      label:'6. Phone  (pure scheme probe)',
+      note:'tel:5551234567 — cancel the call prompt',
+      href:'tel:5551234567' },
+
     { id:'chrome',
-      label:'3. Chrome  (known to work — control)',
+      label:'7. Chrome  (control — this one worked before)',
       note:'googlechromes://' + APP,
       href:'googlechromes://' + APP },
 
-    { id:'firefox',
-      label:'4. Firefox',
-      note:'firefox://open-url?url=…',
-      href:'firefox://open-url?url=' + ENC },
-
-    { id:'edge',
-      label:'5. Edge',
-      note:'microsoft-edge-https://' + APP,
-      href:'microsoft-edge-https://' + APP },
-
-    { id:'ddg',
-      label:'6. DuckDuckGo',
-      note:'ddgQuickLink://' + APP,
-      href:'ddgQuickLink://' + APP },
-
     { id:'plain',
-      label:'7. Plain https  (control — expect ✗)',
+      label:'8. Plain https  (control — expect ✗)',
       note:HTTPS,
       href:HTTPS, blank:true }
   ];
@@ -147,7 +142,7 @@
     a.rel = 'noopener';
     if (t.blank) a.target = '_blank';
     if (t.hero) a.className = 'hero';
-    a.innerHTML = t.label + '<span class="n">' + t.note + '</span>';
+    a.innerHTML = t.label + '<span class="n">' + t.note.replace(/</g,'&lt;') + '</span>';
 
     var chip = document.createElement('div');
     chip.className = 'chip wait';
@@ -160,6 +155,8 @@
       setTimeout(function () {
         var handedOff = lastHidden > t0;
         var blurred   = lastBlur   > t0;
+        // BLURRED_ONLY usually means a native alert appeared without a real
+        // app handoff — worth distinguishing from a silent refusal.
         results[t.id] = handedOff ? 'OPENED' : (blurred ? 'BLURRED_ONLY' : 'BLOCKED');
         chip.className = 'chip ' + (handedOff ? 'ok' : 'bad');
         chip.textContent = handedOff ? '✓' : '✗';
@@ -174,14 +171,15 @@
 
   function blob() {
     var lines = [
-      'STRUT BROWSER-ESCAPE TEST',
+      'STRUT ROUND 2 — STOCK APPS ONLY',
       'time: ' + new Date().toISOString(),
       'ua:   ' + ua,
-      'matched: ' + which,
       '--- results ---'
     ];
     TESTS.forEach(function (t) { lines.push(t.label.replace(/\s+/g,' ') + '  =>  ' + results[t.id]); });
-    lines.push('(OPENED = something took over the screen. BLOCKED = nothing happened.)');
+    lines.push('(OPENED = something took over. BLOCKED = nothing happened.');
+    lines.push(' BLURRED_ONLY = an alert appeared but no app opened.)');
+    lines.push('smart app banner visible at top of page? ___');
     return lines.join('\n');
   }
 
