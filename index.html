@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Get Strut</title>
+<meta name="description" content="Strut makes you earn your screen time. Walk more, scroll less.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F4EAD9">
+<meta property="og:title" content="Strut — Walk more. Scroll less.">
+<meta property="og:description" content="Your apps stay locked until you've earned them with steps. Get Strut on the App Store.">
+<meta property="og:type" content="website">
+<style>
+  /* No webfonts. A Google Fonts request is a render-blocking round trip inside
+     Instagram's WebView — that delay IS the "landing page" feeling. System
+     stack paints on the first frame. */
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --cream:#F4EAD9; --card:#FCF7EE; --orange:#F26A1B; --orange-d:#d65a12;
+    --ink:#141210; --muted:#8d7d68; --hair:#e6d8c2; --body:#5d5347;
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
+  }
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);background:var(--cream);color:var(--ink);
+    -webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;
+    padding:24px calc(20px + env(safe-area-inset-left)) calc(24px + env(safe-area-inset-bottom));
+  }
+  .card{
+    width:100%;max-width:400px;background:var(--card);border:1px solid var(--hair);
+    border-radius:26px;padding:34px 26px 26px;text-align:center;
+    box-shadow:0 18px 44px rgba(20,18,16,.07);
+  }
+  .mark{font-family:var(--serif);font-size:14px;letter-spacing:3.5px;text-transform:uppercase;color:var(--orange)}
+  h1{font-family:var(--serif);font-size:33px;line-height:1.12;margin:14px 0 0;letter-spacing:-.3px;font-weight:400}
+  p.sub{font-size:15.5px;line-height:1.5;color:var(--body);margin:12px 0 0}
+
+  .btn{
+    display:block;width:100%;margin:24px 0 0;padding:17px 20px;border:none;cursor:pointer;
+    border-radius:16px;background:var(--orange);color:#fff;
+    font-family:var(--sans);font-size:17px;font-weight:700;letter-spacing:-.2px;
+    text-decoration:none;transition:transform .12s ease,background .12s ease;
+  }
+  .btn:active{transform:scale(.975);background:var(--orange-d)}
+  .btn.ghost{
+    background:transparent;color:var(--ink);border:1.5px solid var(--hair);
+    margin-top:10px;font-weight:500;font-size:15.5px;
+  }
+  .btn.ghost:active{background:#f2e7d5}
+
+  .spinner{
+    width:22px;height:22px;margin:26px auto 4px;border-radius:50%;
+    border:2.5px solid var(--hair);border-top-color:var(--orange);animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .more{margin:22px 0 0;padding-top:18px;border-top:1px solid var(--hair);display:none}
+  .more.show{display:block}
+  .more h2{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+  .more ol{text-align:left;margin:14px 4px 0;padding-left:18px;font-size:14.5px;line-height:1.65;color:var(--body)}
+  .more ol b{color:var(--ink);font-weight:700}
+  .dots{display:inline-block;font-weight:700;letter-spacing:1px}
+
+  .foot{margin:22px 0 0;font-size:12.5px;color:var(--muted)}
+  .foot a{color:var(--muted);text-decoration:none}
+  .toast{
+    position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translate(-50%,14px);
+    background:var(--ink);color:#fff;font-size:14px;font-weight:500;padding:12px 20px;border-radius:100px;
+    max-width:88vw;opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  #stage-loading .sub{color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+
+<main class="card">
+  <div class="mark">Strut</div>
+
+  <!-- Safari/Chrome/desktop: replaced before paint, this is just a flash of state. -->
+  <div id="stage-loading">
+    <h1>Opening the App&nbsp;Store</h1>
+    <div class="spinner"></div>
+    <p class="sub">One moment.</p>
+  </div>
+
+  <!-- In-app browsers: Instagram, Facebook, TikTok, Snapchat, Threads… -->
+  <div id="stage-inapp" hidden>
+    <h1>Walk more.<br>Scroll less.</h1>
+    <p class="sub">Strut locks your distracting apps until you've earned them with steps.</p>
+
+    <!--
+      A REAL anchor, not a JS-driven button. In-app WebViews treat a genuine
+      user-gesture anchor navigation far more permissively than a programmatic
+      window.open()/location.href — that difference is the whole ballgame.
+      itms-apps:// is a native scheme, so iOS opens the App Store APP; it never
+      becomes an https page-load Instagram can swallow.
+
+      NOT USED: x-safari-https:// — confirmed dead in Instagram's WebView since
+      2026-03-03 (shalanah/inapp-debugger#16). Any "escape to Safari first"
+      advice predates that and fails silently on the one platform that matters.
+    -->
+    <a class="btn" id="primary" href="itms-apps://apps.apple.com/app/id6761438303" rel="noopener">Get Strut on the App Store</a>
+
+    <div class="more" id="more">
+      <h2>Didn't open?</h2>
+
+      <!-- Plain https, still as a real cross-domain anchor click. Succeeds most
+           of the time even inside the IAB. -->
+      <a class="btn ghost" id="alt-web" href="https://apps.apple.com/app/strut-walk-more-scroll-less/id6761438303" target="_blank" rel="noopener">Try again</a>
+
+      <!-- Only real working browser escape left on iOS, and only if Chrome exists. -->
+      <a class="btn ghost" id="alt-chrome" href="googlechromes://apps.apple.com/app/id6761438303" hidden>Open in Chrome</a>
+
+      <button class="btn ghost" id="copy">Copy link</button>
+
+      <ol>
+        <li>Tap <b class="dots" id="menu-glyph">•••</b> in the top right</li>
+        <li>Choose <b id="menu-item">Open in external browser</b></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- non-iOS -->
+  <div id="stage-android" hidden>
+    <h1>Strut is iPhone&nbsp;only</h1>
+    <p class="sub">Android isn't supported yet. Open this link on your iPhone to download.</p>
+    <button class="btn ghost" id="copy2">Copy link</button>
+  </div>
+
+  <p class="foot"><a href="https://apps.apple.com/app/id6761438303" id="home">strut</a></p>
+</main>
+
+<div class="toast" id="toast">Link copied</div>
+
+<script>
+(function () {
+  var APP_ID  = '6761438303';
+  var WEB_URL = 'https://apps.apple.com/app/strut-walk-more-scroll-less/id' + APP_ID;
+
+  // Derived, not hardcoded — correct on whatever domain this is deployed to.
+  var SHARE = window.location.origin +
+              window.location.pathname.replace(/\/index\.html$/, '');
+
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/.test(ua) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var inApp = /Instagram|FBAN|FBAV|FB_IAB|FBIOS|Barcelona|Snapchat|TikTok|BytedanceWebview|musical_ly|Twitter|LinkedInApp|Pinterest|Line\//i.test(ua);
+
+  var $ = function (id) { return document.getElementById(id); };
+  var escaped = false;
+
+  // If iOS takes over, this page gets backgrounded — our only success signal.
+  function markEscaped() { escaped = true; }
+  window.addEventListener('pagehide', markEscaped);
+  window.addEventListener('blur', markEscaped);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') markEscaped();
+  });
+
+  function show(id) {
+    ['stage-loading', 'stage-inapp', 'stage-android'].forEach(function (s) {
+      $(s).hidden = (s !== id);
+    });
+  }
+
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, 2200);
+  }
+
+  function copyLink() {
+    var ok = function () { toast('Copied — paste it in Safari'); };
+    var manual = function () { toast(SHARE.replace(/^https?:\/\//, '')); };
+    function legacy() {
+      var ta = document.createElement('textarea');
+      ta.value = SHARE;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:absolute;left:-9999px;top:0';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, 99999);
+      try { document.execCommand('copy') ? ok() : manual(); } catch (e) { manual(); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(SHARE).then(ok, legacy);
+    } else { legacy(); }
+  }
+
+  // Wording differs per host app's menu.
+  function labelMenu() {
+    var glyph = '•••', item = 'Open in external browser';
+    if (/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua))                 { item = 'Open in browser'; }
+    else if (/TikTok|BytedanceWebview|musical_ly/i.test(ua)) { item = 'Open in browser'; }
+    else if (/Snapchat/i.test(ua))                          { glyph = '⋮'; item = 'Open in Safari'; }
+    else if (/Twitter|LinkedInApp|Pinterest/i.test(ua))     { item = 'Open in Safari'; }
+    $('menu-glyph').textContent = glyph;
+    $('menu-item').textContent = item;
+  }
+
+  $('copy').addEventListener('click', copyLink);
+  $('copy2').addEventListener('click', copyLink);
+
+  // Tapping the primary anchor navigates natively. If we're still here a beat
+  // later, the handoff didn't take — surface every remaining option.
+  $('primary').addEventListener('click', function () {
+    setTimeout(function () { if (!escaped) revealMore(); }, 1200);
+  });
+
+  function revealMore() {
+    $('more').classList.add('show');
+    // Chrome's scheme is the last real escape hatch on iOS, but it's useless if
+    // Chrome isn't installed and we cannot feature-detect that. Offer it only
+    // once the primary path has already visibly failed.
+    $('alt-chrome').hidden = false;
+  }
+
+  // ---- route ----
+  if (!inApp) {
+    // Safari / Chrome / desktop: nothing is intercepting us. Go straight there.
+    window.location.replace(WEB_URL);
+    return;
+  }
+
+  if (!isIOS) { show('stage-android'); return; }
+
+  labelMenu();
+  show('stage-inapp');
+
+  // No auto-navigation on load: gesture-less navigation is exactly what these
+  // WebViews drop, and a silent failure would burn our one good attempt.
+  // The tap IS the mechanism. Safety net if the user never taps:
+  setTimeout(function () { if (!escaped) revealMore(); }, 6000);
+})();
+</script>
+</body>
+</html>
